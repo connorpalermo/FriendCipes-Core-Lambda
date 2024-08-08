@@ -4,15 +4,18 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
+import com.friendcipes.config.DaggerConfigComponent;
 import com.friendcipes.exception.PathNotDefinedException;
 import com.friendcipes.model.HttpConstants;
 import com.friendcipes.routing.GetRouter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.SQLException;
+
 public class FriendCipesCoreHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
-    GetRouter gr = new GetRouter();
+    GetRouter gr = DaggerConfigComponent.create().buildGetRouter();
     private static final Logger logger = LoggerFactory.getLogger(FriendCipesCoreHandler.class);
 
     @Override
@@ -27,7 +30,7 @@ public class FriendCipesCoreHandler implements RequestHandler<APIGatewayProxyReq
                 String responseBody;
                 try {
                     responseBody = gr.handle(httpPath);
-                } catch(PathNotDefinedException p){
+                } catch(PathNotDefinedException | SQLException p){
                     response.setBody(p.getMessage());
                     response.setStatusCode(HttpConstants.INTERNAL_SERVER_ERROR);
                     return response;
